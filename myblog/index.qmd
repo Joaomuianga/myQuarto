@@ -1,0 +1,39 @@
+---
+title: "João Muianga"
+about:
+  id: hero-heading
+  template: solana
+  image: myprofile.png
+  links:
+    - icon: twitter
+      text: Twitter
+      href: https://x.com/JoaoMuianga
+    - icon: github
+      text: Github
+      href: https://github.com
+    - icon: linkedin
+      text: Linkedin
+      href: linkedin.com/in/joao-muianga-b3b9306b
+    - icon: file-person
+      text: CV
+      href: cv/cv.qmd
+---
+
+::: g-col-md-12
+I'm a Data Analyst and Management with passion in R, Power BI, Excel, SQL, ChatGPT and MLLs, most of my work and experience acquired at UN where I started my career as data manager.
+
+I'm concentrate my effort and research in Health sector, Food and Nutrition and Demography area, where daily I do data collection, cleaning, manipulation, visualization, statistics analysis and MLL.
+
+When I'm not working, I like to spend my time playing paddle tennis, going on adventures, seeing new places, playing music and spending time with my family and friends.
+
+## Education
+
+**University of Eduardo Mondlane, Maputo** \| Mozambique.\
+Computer Engineering Degree \| Feb 2011 - Dec 2016
+
+## Experience
+
+I have over 6 years working for UN as Data management and analyst for various humanitarian and emergency response, outbreaks including Global COVID-19.
+
+I also have computer's skills such MS Excel, Azure, Cisco Network, Github/Git, ChatGPT and more tools.
+:::

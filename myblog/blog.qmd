@@ -1,0 +1,14 @@
+---
+title: "Take a look"
+listing:
+  contents: posts/**/*.qmd           # mall .qmd files from the posts directory and sub-directories will be included in this listing page
+  sort: "date desc"
+  type: default
+  categories: true
+  sort-ui: true                     # enable sorting 
+  filter-ui: true                   # enable filter
+  fields: [image, date, title, reading-time, description, categories]     # display posts reading time instead of the author
+  feed: true                        # instructs this linting page to generaye an RSS-feed
+page-layout: full
+title-block-banner: false
+---

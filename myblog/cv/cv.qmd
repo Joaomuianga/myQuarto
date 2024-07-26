@@ -1,0 +1,242 @@
+---
+format: 
+  pdf: 
+    documentclass: article
+    geometry:
+      - top=10mm
+      - left=15mm
+      - right=15mm
+      - bottom=5mm
+      - heightrounded
+    fontfamily: libertine
+    colorlinks: true
+    fontsize: '16'
+    include-in-header: 
+      text: |
+        \usepackage{multicol}
+        \usepackage{lipsum}
+        \usepackage{hyperref}
+        \usepackage{libertine}
+        \pagestyle{empty}
+        \setlength{\multicolsep}{2pt plus 1.0pt minus 0.75pt}% 50% of original values
+        \setlength{\columnsep}{3em}
+---
+<!-- TITLE -->
+\begin{huge}\begin{center}{\bf João Muianga}\end{center}\end{huge}
+
+<!-- CONTACT INFO -->
+\begin{center}joao.muianga1@gmail.com ∙ \href{https://github.com/joao.muianga}{Github} ∙ \href{https://www.linkedin.com/in/joao-muianga-b3b9306b/}{LinkedIn}
+\end{center}
+\vspace{15pt}
+
+<!-- EDUCATION: 1ST BULLET -->
+\begin{large}
+  {\bf EDUCATION}
+  \vspace{3pt}
+  \hrule
+  \begin{multicols}{2}
+    \begin{flushleft}{\bf University of Eduardo Mondlane}\end{flushleft}
+    \begin{flushright}Maputo, MPT\end{flushright}
+  \end{multicols}
+  \vspace{-0.17cm}
+  \begin{multicols}{2}
+    \begin{flushleft}Degree of Engineering: Computer Sciences\end{flushleft}
+  \end{multicols}
+\end{large}
+
+\vspace{0.05cm}
+
+
+<!-- SKILLS -->
+\begin{large}{\bf SKILLS}
+  \vspace{3pt}
+  \hrule
+\end{large}
+\vspace{-0.16cm}
+**Languages and Tools** - *proficient:* R, Power BI, SQL *intermediate:* Python, GIS, Tensorflow/Keras, Git/Github, Docker, ChatGPT in R 
+**Selected Coursework** - Data Science, Applied Epi, Quarto, Rmarkdown, Contact Trace, Linear Models for Data Science, Forecasting model, Statistical Learning, Data Engineering, Linear Algebra,  Data Visualization, Choropleth map with R and ggplot2, Deep Learning, Big Data Systems with Spark, Azure.
+
+<!-- LANGUAGES -->
+\begin{large}{\bf LANGUAGES}
+  \vspace{3pt}
+  \hrule
+\end{large}
+\vspace{-0.16cm}
+**Fluent ** - *proficient:* English, Portuguese *intermediate:* Spanish, *Basic* - French
+
+
+<!-- EXPERIENCE : 1ST BULLET-->
+\begin{large}{\bf EXPERIENCE}
+  \vspace{3pt}
+  \hrule
+  \begin{multicols}{2}
+    \begin{flushleft}{\bf \href{https://www.appliedepi.org/}{AppliedEpi}}\end{flushleft}
+    \begin{flushright}Jan 2024-Present\end{flushright}
+  \end{multicols}
+  \vspace{-0.17cm}
+  \begin{multicols}{2}
+    \begin{flushleft}\textit{R Instructor, Trainee}\end{flushleft}
+    \begin{flushright}Remote, Home\end{flushright}\end
+  {multicols}
+\end{large}
+\vspace{-0.16cm}
+* Provide building and capacity training in **R** to the participants. 
+* Contributing by sharing links, adding interesting tips, and answering questions. 
+*Contributing and giving opinions to improve teaching methodology and material.
+
+\vspace{7pt}
+
+<!-- EXPERIENCE : 2ND BULLET -->
+\begin{large}
+  \begin{multicols}{2}
+    \begin{flushleft}{\bf \href{https://www.who.int/}{World Health Organization }}\end{flushleft}
+    \begin{flushright}Oct 2021-Dec 2023\end{flushright}
+  \end{multicols}
+  \vspace{-0.17cm}
+  \begin{multicols}{2}
+    \begin{flushleft}\textit{Consultant, Data Analyst}\end
+    {flushleft}\begin{flushright}Geneva, GV.\end
+    {flushright}
+  \end{multicols}
+\end{large}
+\vspace{-0.16cm}
+* Enhance and improve the management and flow of data and information applied in real time to guide outbreak response and contribute to the development of public-facing briefing material. 
+* Support and collaborate with epidemiologists analysts and other specialists in the syntheses, management and analysts of epidemiological, geospatial and other data and information collected by field teams and other sources, and where possible, support the automation of recurring analyses.
+* Develop, contribute to and improve new and existing standard operation procedures (SOPs) to facilitate data analyses during outbreaks
+
+\vspace{7pt}
+
+<!-- EXPERIENCE : 3RD BULLET -->
+\begin{large}
+  \begin{multicols}{2}
+    \begin{flushleft}{\bf \href{https://wfp.org/}{World Food Programme}}\end{flushleft}
+    \begin{flushright}Jan 2020-Sept 2021\end{flushright}
+  \end{multicols}
+  \vspace{-0.17cm}
+  \begin{multicols}{2}
+    \begin{flushleft}\textit{Senior Information Management}\end
+    {flushleft}\begin{flushright}Maputo, MPT.\end
+    {flushright}
+  \end{multicols}
+\end{large}
+\vspace{-0.16cm}
+* Analyse the collected data, identify major gaps in terms of geographic locations, population groups (e.g., IPC phases) and well as levels of assistance (e.g., full vs partial rations). Ensure analysis of planned interventions to facilitate operational coordination and identify areas for increased advocacy and fundraising. 
+* Support the HNO preparation: work with the FSC-CC and members to calculate FSC PiN and severity; provide FS contributions for intersectoral analysis (based on JIAF) including participating in the analysis of the severity of needs and intersectoral PiN definition. 
+* Ensure that the information and analyses are visualized and shared through appropriate IM / communication tools and channels: static and interactive dashboards, bulletins / newsletters, sitreps, PPT for partners meetings and donor roundtables, etc.
+
+\vspace{7pt}
+
+<!-- EXPERIENCE : 4TH BULLET -->
+\begin{large}
+  \begin{multicols}{2}
+    \begin{flushleft}{\bf \href{https://who.int/}{World Health Organization}}\end{flushleft}
+    \begin{flushright}Oct 2017-Nov 2019\end{flushright}
+  \end{multicols}
+  \vspace{-0.17cm}
+  \begin{multicols}{2}
+    \begin{flushleft}\textit{Data Manager}\end{flushleft}
+    \begin{flushright}Maputo, MPT\end{flushright}
+  \end{multicols}
+\end{large}
+\vspace{-0.16cm}
+* Technical support to the WHO to implement EWARS System- Epidemiological disease surveillance system to detect and alert early diseases during the Cyclone of IDAI and Kenneth in the Ministry of Health.
+* Regular update of the UN 4W (Who does What, Where and When) dataset to provide key information regarding the activities being implemented by health organizations, to be visualized by the interactive dashboard in the health cluster meeting. 
+* Support in the collection, analyzing epidemiological data, produce weekly epidemiological bulletin and Sitrep bulletin.
+
+\vspace{7pt}
+
+<!-- EXPERIENCE : 5TH BULLET -->
+\begin{large}
+  \begin{multicols}{2}
+    \begin{flushleft}{\bf \href{http://misau.gov.mz/}{Ministry of Health Mozambique}}\end{flushleft}
+    \begin{flushright}Jan 2017-Jun 2017\end{flushright}
+  \end{multicols}
+  \vspace{-0.17cm}
+  \begin{multicols}{2}
+    \begin{flushleft}\textit{Data manager}\end{flushleft}
+    \begin{flushright}Maputo, MPT\end{flushright}
+  \end{multicols}
+\end{large}
+\vspace{-0.16cm}
+* Coordinate activities with the implementation partners and the MoH to obtain key information’s to integrate into the HIS-CHOLERA Health Information System.
+* Develop plans and methodologies to assist the MoH group in its activities and involve partners working in the area of Cholera.
+* Training technical staff involved at provincial and central level in the use of the local HIS-CHO database.
+
+\vspace{7pt}
+
+
+<!-- EXPERIENCE : 6TH BULLET -->
+\begin{large}
+  \begin{multicols}{2}
+    \begin{flushleft}{\bf \href{http://unicef.org/}{UNICEF}}\end{flushleft}
+    \begin{flushright}Feb 2016-Dec 2016\end{flushright}
+  \end{multicols}
+  \vspace{-0.17cm}
+  \begin{multicols}{2}
+    \begin{flushleft}\textit{Consultant, Data manager}\end{flushleft}
+    \begin{flushright}Maputo, MPT\end{flushright}
+  \end{multicols}
+\end{large}
+\vspace{-0.16cm}
+* Customize and develop an interactive, patient-focused mobile application, covering all areas of action of the EPA (Elementary Polyvalent Agents) using the RapidPro application from UNICEF. 
+* Integrate the EPA indicators, submitted in the mHealth system into the DHIS2 - SISMA, Health information system for monitoring and evaluation.
+* Develop an interface/dashboard in the Health Information System to monitor and evaluate (SISMA) in the district, provincial and national levels to support and report.
+
+\vspace{7pt}
+
+
+<!-- EXPERIENCE : 7TH BULLET -->
+\begin{large}
+  \begin{multicols}{2}
+    \begin{flushleft}{\bf \href{http://vm.co.mz/}{Vodacom}}\end{flushleft}
+    \begin{flushright}Jan 2014-May 2015\end{flushright}
+  \end{multicols}
+  \vspace{-0.17cm}
+  \begin{multicols}{2}
+    \begin{flushleft}\textit{Database Manager}\end{flushleft}
+    \begin{flushright}Maputo, MPT\end{flushright}
+  \end{multicols}
+\end{large}
+\vspace{-0.16cm}
+* Monitor performance and manage parameters to provide rapid, user-made data lookup responses
+in the database of client.
+* Collaborate with database administrators of international country in the new implementations of management of database and procedures. * Develop and test back up plans in the database and ensure that the storage procedures and data collection work properly.
+
+\vspace{7pt}
+
+
+<!-- EXPERIENCE : 8TH BULLET -->
+\begin{large}
+  \begin{multicols}{2}
+    \begin{flushleft}{\bf \href{http://lenmed.co.za/}{Hospital Privado}}\end{flushleft}
+    \begin{flushright}Jan 2013-Dec 2013\end{flushright}
+  \end{multicols}
+  \vspace{-0.17cm}
+  \begin{multicols}{2}
+    \begin{flushleft}\textit{IT Helpdesk}\end{flushleft}
+    \begin{flushright}Maputo, MPT\end{flushright}
+  \end{multicols}
+\end{large}
+\vspace{-0.16cm}
+* Provide remote assistance on the computational problems to external customers.
+* Analyze the time response of the technicians and send to the manager to help improve the quality of attendance of the incidents.
+* In case of failure or damaged parts of computers and peripherals, request new parts to the supplier, repair and register in the local database.
+* Inventory of all existing computer equipment in the organization, detailed description of equipment status and provide report to the IT team and manager at the end of the week.
+
+\vspace{7pt}
+
+<!-- PERSONAL PROJECTS : 1ST BULLET -->
+\begin{large}
+{\bf SARA 2018}
+  \vspace{3pt}
+  \hrule
+  \begin{multicols}{2}
+    \begin{flushleft}\textit{\href{https://www.afro.who.int/sites/default/files/2020-02/SARA_2018_Invetário_Nacional.pdf}{Bayesian County-Level School Shooting Analysis}}\end{flushleft}
+    \begin{flushright}August 2022\end{flushright}
+  \end{multicols}
+  \vspace{-0.17cm}
+\end{large}
+* As Data Manager provide technical support in the implementation of SARA project, Service Availability and Readiness Assessment, in all phases: Install a server to host the data and adapt the Instrument to collect data in the field to the National context.
+* Support in the collection, cleaning, analysis of data and elaboration of the report to be presented to the Ministry of health.
+
+\vspace{7pt}

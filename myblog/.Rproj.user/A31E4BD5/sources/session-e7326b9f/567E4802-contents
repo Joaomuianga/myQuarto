@@ -1,0 +1,151 @@
+---
+title: "Dashboard with Shinylive"
+listing:
+  contents: posts/shinyApp
+  sort: "date desc"
+  type: default
+  categories: true
+  sort-ui: false
+  filter-ui: false
+  fields: [image, date, title, reading-time, description]
+
+image: "shine.jpg"
+date: "2024-07-23"
+categories: [R, Shinylive, Quarto,  ggplot2]
+description: "This is an example of how to create a Dashboard with Shinylive-r in R Quarto with fake data."
+
+
+format: 
+  html:
+    code-fold: true
+editor: visual
+
+filters:
+  - shinylive
+  
+static-dir: data
+---
+
+```{shinylive-r}
+
+#| standalone: true
+#| viewerHeight: 600
+
+library(shiny)
+library(bslib)
+library(DT)
+library(rio)
+library(readr)
+library(ggplot2)
+
+
+file_data <- import("/Users/joaomuianga/Documents/joaom7/data/shiny_data.csv")
+# Define UI for application
+ui <- fluidPage(
+  titlePanel("Global DTPV3 Immunization Coverage"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("select_region", "Select Region", 
+                  choices = c("All", 
+                              "AFRO" = "AFR", 
+                              "AMRO" ="AMR", 
+                              "EMRO" = "EMR",
+                              "SEARO" = "SEAR", 
+                              "WPRO" = "WPR", 
+                              "EURO" = "EUR")),
+      
+      sliderInput("year_range", "Select Year Range", min = 2000, max = 2020, value = c(2000, 2020))
+    ),
+    mainPanel(
+      tabsetPanel(
+        tabPanel("Coverage Plot", plotOutput("coverage_plot")),
+        tabPanel("Data Table", DTOutput("data_table")),
+        tabPanel("Summary", verbatimTextOutput("summary"))
+      )
+    )
+  )
+)
+
+
+# Define server logic
+server <- function(input, output) {
+  # Import file
+  linelist <- reactive({
+    file_path <- here::here("data/shiny_data.csv")
+    print(paste("File path is:", file_path))  # Debugging line
+    if (file.exists(file_path)) {
+      tryCatch({
+        data <- read_csv(file_path)
+        print("Data loaded successfully")
+        print(head(data))  # Print first few rows for debugging
+        return(data)
+      }, error = function(e) {
+        print(paste("Error reading file:", e$message))
+        return(NULL)
+      })
+    } else {
+      print("File does not exist.")
+      return(NULL)
+    }
+  })
+  
+  filtered_linelist <- reactive({
+    data <- linelist()
+    if (is.null(data)) return(NULL)
+    
+    linelist_filtered <- data
+    
+    if (input$select_region != "All") {
+      linelist_filtered <- subset(linelist_filtered, region == input$select_region)
+    }
+    
+    linelist_filtered <- subset(linelist_filtered, year >= input$year_range[1] & year <= input$year_range[2])
+    
+    return(linelist_filtered)
+  })
+  
+  output$data_table <- renderDT({
+    datatable(filtered_linelist())
+  })
+  
+  output$summary <- renderPrint({
+    summary(filtered_linelist())
+  })
+  
+  # Render Coverage Plot
+  output$coverage_plot <- renderPlot({
+    data <- filtered_linelist()
+    if (!is.null(data)) {
+      ggplot(data, aes(x = year, y = r_coverage, color = region, group = region)) +
+        geom_line() +
+        geom_point() +
+        scale_y_continuous(labels = scales::label_percent(scale = 100)) +
+        scale_color_manual(name = "Region",
+                           values = c("AFR" = "#508D4E",
+                                      "AMR" = "#987D9A",
+                                      "EMR" = "#E90074",
+                                      "SEAR" = "#E68369",
+                                      "WPR" = "#508C9B",
+                                      "EUR" = "#F4CE14")) +
+        labs(title = "DPTCV3 Global Coverage by Year and Region",
+             x = "Year",
+             y = "Coverage Percentage") +
+        theme(axis.text = element_text(size = 13),
+              axis.title = element_text(size = 16),
+              legend.title = element_text(size = 16),
+              legend.text = element_text(size = 12))
+    }
+  })
+  
+  # Render Debug Data
+  output$debug_path <- renderPrint({
+    file_path <- here::here("data/shiny_data.csv")
+    print(paste("File path is:", file_path))  # Debugging line
+  })
+}
+
+# Create Shiny App
+shinyApp(ui = ui, server = server)
+
+```

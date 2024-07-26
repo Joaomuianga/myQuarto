@@ -1,0 +1,253 @@
+---
+title: "API with R to Extract data from the WHO Global Health Observatory (GHO) "
+listing:
+  contents: posts/gho_with_api
+  sort: "date desc"
+  type: default
+  categories: true
+  sort-ui: false
+  filter-ui: false
+  fields: [image, date, title, reading-time, description]
+page-layout: full
+title-block-banner: false
+image: "api.jpg"
+date: "2024-06-28"
+categories: [R, API, Summary Table, GHO OData API]
+description: "How to Extract a list of indicators available in World Health Organization - Global Health Observatory (GHO) via API and  create a summary table."
+
+execute: 
+  message: false
+  warning: false
+  
+  editor_options:
+    chunk_output_type: console
+    
+format: 
+  html:
+    code-fold: true
+editor: visual
+---
+
+```{r}
+#| echo: false
+#| results: 'hide'
+#| eval: false
+renv::use(lockfile = "renv.lock")
+```
+
+# Context / Purpose
+
+[The Global Health Observatory (GHO)](https://www.who.int/data/gho) data repository is WHO's gateway to health-related statistics. It provides access to over 1000 indicators on priority health topics including mortality and burden of diseases, the Millenium Development Goals and more. They are updated as more recent or revised data become available.
+
+In this scenario I will create a function to extract the indicator of *Nutrition - Prevalence of wasted children under 5 years of age* and summarise a table showing the total of countries by region that have their most recent value from the year of 2001 to 2020.
+
+# Install packages
+
+Install and run packages, they are the fundamental units of reproducible R code. In this case we will run packages for external connections and reproduction of summarized tables.
+
+```{r}
+#| label: load-packages
+#| echo: true
+#| code-fold: false
+
+pacman::p_load(
+  rio,              # Import and export files
+  here,             # File pathways
+  jsonlite,         # Read JSON file in R
+  httr,             # Request object in URL or HTML (GET(), POST())
+  glue,             # Interpret string literals that are small, fast, and dependency-free
+  janitor,          # Data cleaning and tables
+  lubridate,        # Working with dates
+  flextable,        # mMke HTML tables 
+  officer,          # hHlper functions for tables
+  tidyverse         # Data management and visualization
+)
+```
+
+# Function to extract data in the GHO OData API
+
+-   First let's define the global variables, this involves setting the URL, and indicators interested. The Indicator code is: *Prevalence of wasted children under 5 years of age*.
+
+-   Second, we will create a function that requests and searches the data on the GHO website for R and converts JSON files into a data frame.
+
+Code source: Thanks [Kirstin](https://medium.com/@kirstin.lyon/connect-to-global-health-observatory-who-data-api-with-r-fef4315693a1) for useful tutorial.
+
+```{r}
+#| label: Import_data
+#| code-fold: false
+#| eval: false
+
+
+# Global variable
+url_base <- "https://ghoapi.azureedge.net/api/" 
+
+# Declare the type of indicators 
+indicator_text <- "prevalence"      
+indicator_text_wasted <- "Wasting prevalence among children under 5 years of age"
+indicator <- "NUTRITION_WH_2"
+
+# The function convert a JSON in URL to tibble
+convert_JSON_to_tbl <- function(url){
+  data <- GET(url)                                                    # Get a url
+  data_df <- fromJSON(content(data, as = "text", encoding = "utf-8")) # Convert R object to JSON
+  data_tbl <-  map_if(data_df, is.data.frame, list) %>%               # Takes a predicate function.p 
+    as_tibble %>%                                                     # Turn the object such as a data frame
+    unnest(cols = c(value)) %>%                                       # Expands a list-column containing dataframe into rows and columns
+    select(-'@odata.context')                                         
+}
+
+
+###### Exploring the data
+
+# URL will provide you with the list of indicators
+all_indicators <-  convert_JSON_to_tbl(glue(url_base,"Indicator")) %>% 
+  select(-Language)
+
+####### Create a vector for the  indicator requested
+
+# Get the indicator through code
+get_indicator_code <- all_indicators %>% 
+  filter(grepl(indicator, IndicatorCode, ignore.case = TRUE))  # grepl search for matches to argument pattern
+
+# Get the indicator through text 
+get_indicator_text <- all_indicators %>% 
+  filter(grepl(indicator_text, IndicatorName, ignore.case = TRUE))
+
+# Get the indicator through a word "Wasting" 
+get_indicator_text_wasted <- all_indicators %>% 
+  filter(grepl(indicator_text_wasted, IndicatorName, ignore.case = TRUE))
+
+# Join the tables 
+indicators <- get_indicator_code %>% 
+  union(get_indicator_text) %>% 
+  union(get_indicator_text_wasted)
+
+# Show in a list the names of indicator codes
+indicator_codes <- get_indicator_code %>% 
+  pull(IndicatorCode)
+
+# Pull data and Convert to a List, however only extract data of interest
+# Each indicator has its own table in the WHO GHO, but in this case we would like to have one table "Nutrition_WH"
+indicator_data <- map(indicator_codes, function(code){       # return a list   
+  response <- GET(
+    glue(url_base, code))                                    # get URL and the 2 indicators codes found
+  content(response, "text")
+})
+
+
+# Converts the list to tibble with one column per field
+indicator_data_tbl <- map_dfr(indicator_data, ~ fromJSON(.x, 
+                                                         simplifyVector = TRUE)  %>%
+                              as_tibble()  %>%
+                              unnest(cols = everything())) 
+
+export(indicator_data_tbl, here("data", "data_table_raw.csv"))
+
+```
+
+# Check the data
+
+It's always good to check the table, use the `skimr::skim(dataset)` function it provides summary statistics about variables in data frames, however let see only 5 rows and all columns.
+
+```{r}
+#| label: import_data_from_computer
+#| include: false
+#| echo: false
+# I will import from my computer
+data_table_raw <- import(here("data", "data_table_raw.csv"))
+
+```
+
+```{r}
+#| label: Dataset_checking
+#| tbl-cap: Summary table
+#| tbl-colwidths: [20,10]
+#| code-fold: false
+#| include: false
+#| warning: false
+#| message: false
+# Data summary
+knitr::kable(head(data_table_raw), format = "html")
+
+
+```
+
+# Data Cleaning
+
+Time to clean the data_table. let's use the functions from the tidyverse family of R packages, we just need to rename interested columns using the `rename()` function and reorder the columns, keeping the original ones at the end.
+
+```{r}
+#| label: data_cleaning
+#| code-fold: false
+#| eval: false
+
+data_table <- indicator_data_tbl %>%
+  # Clean column names
+  clean_names() %>%
+  # Rename columns 
+  rename(year = time_dim,
+         numeric_value = numeric_value,
+         high_value = high,
+         low_value = low,
+         country_code = spatial_dim,
+         region_code = parent_location_code,
+         region_name = parent_location,
+         indicator_code = id,
+         indicator_name = indicator_code,
+         source = odata_context) %>% 
+  # Reorder the position of interest's columns
+  select(indicator_code, indicator_name, region_code, region_name, year, country_code, low_value, high_value, numeric_value, everything())
+
+```
+
+# Summary Table
+
+Let's create a nice table to show how many countries have their most recent value in the year ranges 2001-2005, 2006-2010, 2011-2015, 2016-2020.
+
+```{r}
+#| label: data_summary
+#| code-fold: false
+
+data_table <- import(here("data", "nutrition_dataset.csv"))
+
+border_style <- officer::fp_border(color="black", width=1)
+
+ data_table %>%
+  filter(year > 2000, value>0) %>%
+  mutate(range = case_when(
+    year <2006  ~ "2001-2005",
+    year >2005 & year <2011 ~ "2006-2010",
+    year >2010 & year <2016 ~ "2011-2015",
+    year >2015 & year <2021 ~ "2016-2020"
+  )) %>%
+  select(range, region_name, country_code, value) %>%
+   
+  distinct(range, country_code, region_name)%>%
+  tabyl(region_name, range, show_na = FALSE)%>%
+  adorn_totals() %>%
+  adorn_percentages(denominator = "col") %>%
+  adorn_pct_formatting() %>%
+  adorn_ns(position = "front") %>%
+  flextable::qflextable() %>% 
+  autofit() %>%
+    
+  add_header_row(
+    top = TRUE,
+    values = c("WHO Region",
+               "Total of Countries by Year Range",
+               "",
+               "",
+               "")) %>%
+  set_header_labels(
+    region_name = "") %>%
+  merge_at(i = 1, j= 2:5, part = "header")%>%
+  border_remove() %>%
+  theme_booktabs()%>%
+  vline(part = "all", j=1, border = border_style)%>%
+  align(align = "center", j = c(2:5), part = "all") %>%
+  fontsize(i = 1, size = 12, part = "header") %>%
+  bold(i = 1, bold = TRUE, part = "header") %>%
+  bold(i = 7, bold = TRUE, part = "body") %>%
+  bg(part = "body", bg = "gray95")
+
+```

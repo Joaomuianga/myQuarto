@@ -1,0 +1,4 @@
+- source: project
+  netlify:
+    - id: 63f66de7-cdef-4656-873a-5a985937ad9e
+      url: 'https://bejewelled-nougat-3b99a7.netlify.app'

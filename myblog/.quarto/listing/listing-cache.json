@@ -1,0 +1,19 @@
+{
+  "listingMap": {
+    "posts/maps_viridis/maps.qmd": [
+      "posts/maps_viridis"
+    ],
+    "posts/auto_report/auto_report.qmd": [
+      "posts/auto_report"
+    ],
+    "posts/forecast_hosp/forecast.qmd": [
+      "posts/forecast_hosp"
+    ],
+    "posts/gho_with_api/post.qmd": [
+      "posts/gho_with_api"
+    ],
+    "blog.qmd": [
+      "posts/**/*.qmd"
+    ]
+  }
+}

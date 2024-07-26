@@ -1,0 +1,30 @@
+{
+  "posts/maps_viridis/maps.qmd": {
+    "maps.html": "f17b724d"
+  },
+  "index.qmd": {
+    "index.html": "73984eb4"
+  },
+  "posts/auto_report/auto_report.qmd": {
+    "auto_report.html": "a7100cf5"
+  },
+  "posts/forecast_hosp/forecast.qmd": {
+    "forecast.html": "959cd570"
+  },
+  "posts/gho_with_api/post.qmd": {
+    "post.html": "2c4fcb2f"
+  },
+  "cv/cv.qmd": {
+    "cv.html": "437f826a",
+    "cv.tex": "3e656e99"
+  },
+  "gis/spf_usa/usa_shapefile.qmd": {
+    "usa_shapefile.html": "5d163c39"
+  },
+  "blog.qmd": {
+    "blog.html": "c73b96ba"
+  },
+  "posts/shinyapp/shiny.qmd": {
+    "shiny.html": "9af3da2d"
+  }
+}

@@ -1,0 +1,277 @@
+---
+title: "COVID-19 Forecast: US Hospitalizations data"
+listing:
+  contents: posts/forecast_hosp
+  sort: "date desc"
+  type: default
+  categories: true
+  sort-ui: false
+  filter-ui: false
+  fields: [image, date, title, reading-time, description]
+page-layout: full
+title-block-banner: false
+image: "forecast.jpg"
+date: "2024-07-03"
+categories: [R, API, Forecast, ARIMA model, Time series, Hospitalization, COVID-19]
+description: "A overview of forecasting methods using US COVID-19 Hospitalization data throught API."
+
+execute: 
+  message: false
+  warning: false
+  
+  editor_options:
+    chunk_output_type: console
+    
+format: 
+  html:
+    code-fold: true
+editor: visual
+---
+
+# Request data using API in R
+
+APIs allow programmers to request data directly from Server API or website through an Application Programming Interface. The first step is making a request to access the data in a certain website, the API server (own of data) will send back a response. There are several types of requests that one can make to an API server `GET, POST, PUT`. Four our purpose we'll be asking for data using `GET` requests.
+
+To create a `GET` request we need to use the `GET()` function from the `httr` library.
+
+```{r}
+#| label: httr_package
+#| code-fold: false
+pacman::p_load(httr,            # request url using GET() function
+               jsonlite,        # convert JSON file to a data frame in R
+               forecast,        # fit sin and cosin terms to data
+               trending,        # fit and assess models
+               feasts,          # for time series decomposition and autocorrelation
+               janitor,         # summary table 
+               tidyverse        # data management and visualization
+               )
+```
+
+Let's create an object called `path` that will be the JSON link. For particularly large datasets, you probably will not be able to grab all rows with a single API call. An alternative is to request the data in batches by using the`$limit`and `$offset` parameters. Users can request data beginning at a row other than the first row by specifying the `?$offset=_" parameter` at the end of the URL. For example, for the COVID-19 Reported Patient Impact and Hospital Capacity by State Time Series dataset, `"https://healthdata.gov/resource/g62h-syeh.json?$limit=50000" will bring in the first 50000 rows"`, `"https://healthdata.gov/resource/g62h-syeh.json?$limit=50000&\$offset=50000"` will bring in the next 50000 rows.
+
+```{r}
+#| code-fold: false
+#| label: paths
+
+# url for first 50000 rows
+path <- "https://healthdata.gov/resource/g62h-syeh.json?$limit=50000" 
+
+# url for first 50000 rows
+path_2nd <- "https://healthdata.gov/resource/g62h-syeh.json?$limit=50000&$offset=50000"
+```
+
+Now let's make the request using GET() function
+
+```{r}
+#| code-fold: false
+request <- GET(url = path) 
+request_2nd <- GET(url = path_2nd)
+```
+
+### Examining the GET() output
+
+```{r}
+#| code-fold: false
+#| message: true
+
+# see the URL content
+request
+```
+
+The output shows: `Date: 2024-07-02 22:49` when the request was made `Status: 200` refers to the success or failure of the API request, if the number is 200 the request was successful. `Content-Type: application/json` the response says that the data takes on json format `Size: 332 MB` the size of the json file
+
+### Converting JSON file to a data frame
+
+JSON is formatted as a series of key-value pairs, where particular word ("key") is associated a particular value. to do this first let install jsonlite package that contain `fromJSON()` function that convert JSON file into `list`. The `fromJSON()` needs a character vector that contain the JSON structure.
+
+```{r}
+#| code-fold: false
+# Convert the raw Unicode into a character vector that resembles the JSON format
+convert_JSON_to_df <- base::rawToChar(request$content)
+# Get the data we want in a format that we can more easily manipulate in R
+hospitalization_covid_usa <- fromJSON(convert_JSON_to_df, flatten = TRUE)
+
+######### convert the second file
+# Convert the raw Unicode into a character vector that resembles the JSON forma
+convert_JSON_to_df_2nd <- base::rawToChar(request_2nd$content)
+# Get the data we want in a format that we can more easily manipulate in R
+hospitalization_covid_usa_2nd <- fromJSON(convert_JSON_to_df_2nd, flatten = TRUE)
+
+```
+
+Let's join the 2 tables using the `rbind()` function and clean the data. First I will clean the names of columns using the `clean_names()` function that standardizes the syntax of column names, and select interested variables. Use the `skim()` function for the summary table. I will select only 4 variables, `state`, `date`, `previous_day_admission_adult_covid_confirmed` and `previous_day_admission_pediatric_covid_confirmed`, the indicators are aligned to [WHO impatient care definition case](https://gateway.euro.who.int/en/indicators/hfa_534-6010-inpatient-care-discharges-per-100/#id=19629), then will sum give Hospitalization cases.
+
+```{r}
+#| code-fold: false
+# join data frame using rbind
+hosp_clean <-rbind(hospitalization_covid_usa, hospitalization_covid_usa_2nd) %>%
+  clean_names() %>%
+  replace(is.na(.), 0) %>%
+  # calculate new hospitalization and deaths column
+  mutate(previous_day_admission_adult_covid_confirmed     = as.numeric(previous_day_admission_adult_covid_confirmed),
+         previous_day_admission_pediatric_covid_confirmed = as.numeric(previous_day_admission_pediatric_covid_confirmed),
+         new_hospitalization = previous_day_admission_adult_covid_confirmed + previous_day_admission_pediatric_covid_confirmed,
+         deaths_covid = as.numeric(deaths_covid),
+         date                = as.Date(date)) %>%
+  
+  # Select state, date and new_hospitalization variable
+  select(state, date, new_hospitalization, deaths_covid) %>%
+  
+  # create new variable 
+  mutate(country  = "UNITED STATES OF AMERICA",
+          ISO_3_CODE = "USA")
+
+```
+
+```{r}
+#| label: summarized table
+#| code-fold: false
+tm_clean <- hosp_clean%>%
+  mutate(yearmonth = zoo::as.yearmon(date)) %>%
+  group_by(yearmonth) %>%
+  summarise(new_hospitalization = sum(new_hospitalization, na.rm = TRUE),
+            deaths_covid = sum(deaths_covid, na.rm = TRUE))
+
+```
+
+# Time Series Forecasting
+
+Is about predicting the future events or values using historical and present data points. **Times Series:** is anything that is observers sequentially over time, data points are gathered over time.
+
+Predictor variables are often useful in time series forecasting. We have COVID-19 patient admission data in USA from `2020-01-01` to `2024-04-27`. In the next task we will continue of observations into the future using forecasting methods such as trend, seasonality and cyclic.
+
+The basic step in a forecasting task is: - **Problem definition:** This requires an understanding of the way the forecasts will be used, who required the forecaster, and how the forecasting function fits within the requiring the forecasts - **Gathering information:** There are information required: statistical data and the accumulated expertise of people who collect the data and use the forecasts. - **Preliminary (exploratory) analysis:** Always start by graphing the data. Are there consistent patterns ? Is there a significant trend? Is seasonality important? various tools have been developed to help with this analysis. - **Choosing and fitting models:** The best model depends on the availability of historical data. - **Using and evaluating a forecasting model:** Once the model has been selected and its paremeters estimated, themodel is used to make forecasts.
+
+# Time series objects in R
+
+A time series can be throught of as vector or list of numbers. We store in a `ts` object, using `ts()` function
+
+```{r}
+#| code-fold: false
+tm<- ts(
+        tm_clean[, 2:3],        # Just take the sequence of values into column 
+        start = c(2020,1),    # indicate the time of the first observation, c(year, period)
+        frequency = 12)       # is set to 12 because data are montlhy
+
+```
+
+# Time series plots "Trend"
+
+This graphs ebable to visualize many features of data, including patterns, unusual observations, changes over time.
+
+```{r}
+#| label: time_serie
+#| fig-cap: "Time serie of New Hospitalization and Deaths"
+#| code-fold: false
+# message: false
+max(hosp_clean$new_hospitalization)
+
+ggplot2::autoplot(tm, facets = TRUE) +   
+  ggtitle("COVID-19: New Hospitalization - Deaths")+
+  xlab("Year")+
+  ylab("Number")+
+  ylim(0,1000000)
+```
+
+These time series, we have plotted, words such as "trend" and "seasonal" which need to be defined more carefully. -**Trend:** Exists when there is a long-term increase or decrease in the data. It does not have to be linear. -**Seasonal:**A seasonal pattern occurs when a time series is affected by seasonal factors such as the time of the year or the day of the week. Seasonality is always of a fixed and known frequency. -**Cyclic:** A cycle occurs when the data exhibit rises and falls that are not of a fixed frequency. These fluctuations are usually due to economic conditions, and are often related to the "business cycle". The duration of these fluctuations is usually at least 2 years.
+
+We will use two more function `which.max()` and `frequency()` that can be used to identify the smallest index of the maximun value
+
+```{r}
+#| code-fold: false
+which.max(tm[,2])
+```
+
+```{r}
+#| code-fold: false
+frequency(tm[,2])
+```
+
+## Polar Seasonal plot
+
+Is similar to a time plot except that the data are plotted against the individual "seasons" in which data were observed. will create using `ggseasonplot()` function
+
+```{r}
+#| code-fold: false
+#| layout-ncol: 2
+#| fig-cap: 
+#|   -"hospitalization"
+#|   -"deaths"
+
+# polar seasonal plot for hospitalization
+ggseasonplot(tm[,1], polar = TRUE) +
+  ylab("New Hospilatization")+
+  ggtitle("Polar seasonal plot: New Hospitalization")
+
+# polar seasonal plot for deaths
+ggseasonplot(tm[,2], polar = TRUE) +
+  ylab("New Hospilatization")+
+  ggtitle("Polar seasonal plot: Deaths")
+  
+```
+
+## Autocorrelation of non-seasonal time series
+
+Another way to look at time series data is to plot each observation against another observation that occurred some time previously by using `gglagplot()`. For example, you could plot `Yt` against `Yt−1`. This is called a lag plot because you are plotting the time series against lags of itself.
+
+The correlations associated with the lag plots form what is called the autocorrelation function (ACF). The `ggAcf()` function produces ACF plots.
+
+```{r}
+#| code-fold: false
+# ACF plot of hospitalization data
+ggAcf(tm[,2])
+```
+
+###White noise
+
+-   iid, or random, independent, individually distributed observations
+
+###Ljung-Box Test
+
+The Llung-Box test considers the first h autocorrelation values together
+
+A significant test (small p-value) indicates the data are probably not white noise.
+
+###White noise summary
+
+-   white noise is a time series that is purely random
+-   we can test for white noise by looking at an ACF plot or by doing a Ljung-Box test
+
+```{r}
+#| code-fold: false
+#| message: true
+Box.test(tm[,1], lag = 24, fitdf = 0, type = "Ljung")
+```
+
+# Difference series
+
+```{r}
+autoplot(diff(tm[,2])) 
+```
+
+```{r}
+#| code-fold: false
+#| message: true
+summary(forecast::naive(tm[,1], h = 20))
+```
+
+## Checking time series residuals
+
+When applying a forecasting method, it is important to always check that the residual are well-behaved and resemble white noise.
+
+```{r}
+#| code-fold: false
+tm[,1] %>% naive() %>% checkresiduals()
+```
+
+# Forecasting with ARIMA models
+
+ARIMA models aim to describe the autocorrelations in the data, use the `Arima()` function in R. There is another function `arima()` in T which also fits an ARIMA model.
+
+```{r}
+#| code-fold: false
+tm[,1] %>%
+  Arima(order = c (0,1,1), include.constant = FALSE) %>%
+  forecast() %>%
+  autoplot()
+```

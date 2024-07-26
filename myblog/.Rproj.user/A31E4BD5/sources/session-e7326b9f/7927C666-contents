@@ -1,0 +1,44 @@
+project:
+  type: website
+
+website:
+  title: "João Muianga"
+  site-url: https://joaom-muianga.com
+  description: "This is João Muianga's personal Blog to share contents"
+  navbar:
+    right:
+    - text: Home
+      href: index.qmd
+    - text: Blog
+      href: blog.qmd
+    - text: Curriculum Vitae
+      href: cv/cv.qmd
+    - icon: github
+      href: https://github.com/joaomuianga
+    - icon: twitter
+      href: https://twitter.com/joaomuianga
+    - icon: youtube
+      href: https://www.youtube.com/
+    - icon: rss
+      href: blog.xml
+      
+static-dir: data
+
+format:
+  html:
+    theme: flatly
+    css: styles.css
+    resources: 
+    - DummyApp
+    
+google-analytics: "G-30NH2GNE6G"
+cookie-consent: true
+twitter-card: true
+
+filters:
+  - shinylive
+  
+extensions:
+  - quarto-ext/shinylive
+ 
+

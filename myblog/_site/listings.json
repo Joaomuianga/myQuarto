@@ -1,0 +1,27 @@
+[
+  {
+    "listing": "/blog.html",
+    "items": [
+      "/posts/maps_viridis/maps.html",
+      "/posts/forecast_hosp/forecast.html",
+      "/posts/auto_report/auto_report.html",
+      "/posts/gho_with_api/post.html"
+    ]
+  },
+  {
+    "listing": "/posts/gho_with_api/post.html",
+    "items": []
+  },
+  {
+    "listing": "/posts/auto_report/auto_report.html",
+    "items": []
+  },
+  {
+    "listing": "/posts/maps_viridis/maps.html",
+    "items": []
+  },
+  {
+    "listing": "/posts/forecast_hosp/forecast.html",
+    "items": []
+  }
+]
