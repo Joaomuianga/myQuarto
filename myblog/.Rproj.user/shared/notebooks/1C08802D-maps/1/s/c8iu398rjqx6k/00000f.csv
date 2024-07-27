@@ -1,6 +1,0 @@
-"0","#| fig-cap: basic_map"
-"0","#| code-fold: false"
-"0",""
-"0","ggplot(data = us_states_sf)+"
-"0","  geom_sf(fill = ""white"", show.legend = FALSE)"
-"0",""

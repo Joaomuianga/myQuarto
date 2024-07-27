@@ -1,7 +1,0 @@
-"0","#| label: import_sf"
-"0","#| code-fold: false"
-"0",""
-"0","# Import shapefile"
-"0","us_states_sf <- read_sf(here(""gis"", ""spf_usa"", ""usa_shapefile.shp"")) %>%"
-"0","  janitor::clean_names() "
-"0",""

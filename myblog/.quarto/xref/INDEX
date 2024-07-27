@@ -26,5 +26,11 @@
   },
   "posts/shinyapp/shiny.qmd": {
     "shiny.html": "9af3da2d"
+  },
+  "posts/shinyApp/shinyapp.qmd": {
+    "shinyapp.html": "eb87370a"
+  },
+  "posts/appShiny/shinyExample.qmd": {
+    "shinyExample.html": "f67ad206"
   }
 }

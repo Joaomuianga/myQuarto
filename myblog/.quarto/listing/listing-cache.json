@@ -12,6 +12,9 @@
     "posts/gho_with_api/post.qmd": [
       "posts/gho_with_api"
     ],
+    "posts/appShiny/shinyExample.qmd": [
+      "posts/appShiny"
+    ],
     "blog.qmd": [
       "posts/**/*.qmd"
     ]

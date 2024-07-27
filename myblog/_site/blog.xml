@@ -6,15 +6,593 @@
       version="2.0">
 <channel>
 <title>João Muianga</title>
-<link>https://bejewelled-nougat-3b99a7.netlify.app/blog.html</link>
-<atom:link href="https://bejewelled-nougat-3b99a7.netlify.app/blog.xml" rel="self" type="application/rss+xml"/>
+<link>https://joaom7.netlify.app/blog.html</link>
+<atom:link href="https://joaom7.netlify.app/blog.xml" rel="self" type="application/rss+xml"/>
 <description>This is João Muianga&#39;s personal Blog to share contents</description>
 <generator>quarto-1.5.53</generator>
-<lastBuildDate>Tue, 23 Jul 2024 22:00:00 GMT</lastBuildDate>
+<lastBuildDate>Sat, 27 Jul 2024 22:00:00 GMT</lastBuildDate>
+<item>
+  <title>R-Shinylive app in Quarto</title>
+  <dc:creator>João Muianga</dc:creator>
+  <link>https://joaom7.netlify.app/posts/appShiny/shinyExample.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<pre class="shinylive-r" data-engine="r"><code>#| standalone: true
+#| viewerHeight: 720
+#| code-fold: false
+
+library(shiny)
+library(DT)
+library(bslib)
+library(ggplot2)
+
+# Function to generate the sample data
+generate_data &lt;- function() {
+  set.seed(123)  # For reproducibility
+  
+  regions &lt;- c("AFRICA", "AMERICA", "ASIA", "EUROPE")
+  years &lt;- 2000:2020
+  data &lt;- expand.grid(region = regions, year = years)
+  
+  data$doses &lt;- sample(100000:1000000, nrow(data), replace = TRUE)
+  data$population &lt;- sample(1000000:10000000, nrow(data), replace = TRUE)
+  data$coverage &lt;- (data$doses / data$population) * 100
+  
+  return(data)
+}
+
+# Generate the data
+data &lt;- generate_data()
+
+# Define UI for application
+ui &lt;- page_sidebar(
+  title = "Vaccination Coverage Data",
+  
+  sidebar = sidebarPanel(
+    width = 30,
+    selectInput("region", "Select Region:", 
+                choices = c("All", "AFRICA", "AMERICA", "ASIA", "EUROPE"), 
+                selected = "All",
+                multiple = FALSE),
+    sliderInput("yearRange", "Select Year Range:", 
+                min = 2000, max = 2020, 
+                value = c(2000, 2020), step = 1)
+  ),
+  
+  navbarPage(
+  title = "Vaccination Coverage Data",
+  
+    # Example of a tab with a plot (additional feature)
+  tabPanel(
+    "Plot",
+    h3("Coverage Plot"),
+    plotOutput("coveragePlot")
+  )
+  )
+)
+# Define server logic required to display the table and other components
+server &lt;- function(input, output) {
+  # Reactive expression to filter data based on selected region and year range
+  filtered_data &lt;- reactive({
+    data_filtered &lt;- data
+    
+    if (input$region != "All") {
+      data_filtered &lt;- subset(data_filtered, region == input$region)
+    }
+    
+    data_filtered &lt;- subset(data_filtered, year &gt;= input$yearRange[1] &amp; year &lt;= input$yearRange[2])
+    
+    return(data_filtered)
+  })
+
+  # Render a plot of coverage
+  output$coveragePlot &lt;- renderPlot({
+    library(ggplot2)
+    ggplot(filtered_data(), aes(x = year, y = coverage, color = region)) +
+      geom_line() +
+      geom_point()+
+      labs(
+        title = "Vaccination Coverage Over Time",
+        x = "Year",
+        y = "Coverage (%)"
+      ) +
+       scale_color_manual(name = "Region",
+                         values = c("AFRICA" = "#E88D67",
+                                    "AMERICA" = "#DA7297",
+                                    "ASIA" = "#006989",
+                                    "EUROPE" ="#729762"))+
+      theme_minimal()
+  })
+}
+
+# Run the application
+shinyApp(ui = ui, server = server)
+</code></pre>
+<p>This example demonstrates how you can build an interactive dashboard in Quarto using the R Shinylive app that runs without a server.</p>
+<section id="installation" class="level2">
+<h2 class="anchored" data-anchor-id="installation">Installation</h2>
+<p>Step 1: Install the r-shinylive R package from CRAN. It can be obtained from the R console using the following command <code>install.packages("shinylive")</code></p>
+</section>
+<section id="installing-the-quarto-extension-for-r-shinylive" class="level2">
+<h2 class="anchored" data-anchor-id="installing-the-quarto-extension-for-r-shinylive">Installing the Quarto Extension for r-shinylive</h2>
+<p>Step 2: Install the Quarto extension for <code>shinylive</code>. In the Terminal tab, run the following command: <code>quarto add quarto-ext/shinylive</code></p>
+</section>
+<section id="embedding-the-r-shinylive-in-quarto" class="level2">
+<h2 class="anchored" data-anchor-id="embedding-the-r-shinylive-in-quarto">Embedding the R Shinylive in Quarto</h2>
+<p>To Include a Shiny app directly in your Quarto file <code>.qmd</code>, you need to add a filter key for <code>shinylive</code> at the top of the desired Quarto file. Opne your Quarto file and add following YAML header:</p>
+<p>Embed the complete R Shinylive app into a <code>{shinylive-r}</code>. Ensure to set <code>standarlone:true</code> and consider adjusting the app height with <code>viewerHeight:600</code></p>
+</section>
+<section id="render-your-shinylive-app-into-your-terminal" class="level2">
+<h2 class="anchored" data-anchor-id="render-your-shinylive-app-into-your-terminal">Render your Shinylive App into your terminal</h2>
+<p><code>quarto preview R-shinylive-shinyapp.qmd --no-browser --no-watch-inputs</code></p>
+<div class="cell" data-standalone="true">
+<div class="sourceCode cell-code" id="cb2" style="background: #f1f3f5;"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Load library </span></span>
+<span id="cb2-2"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(shiny)</span>
+<span id="cb2-3"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(DT)</span>
+<span id="cb2-4"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(bslib)</span>
+<span id="cb2-5"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(ggplot2)</span>
+<span id="cb2-6"></span>
+<span id="cb2-7"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Function to generate the sample data</span></span>
+<span id="cb2-8">generate_data <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>() {</span>
+<span id="cb2-9">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">set.seed</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">123</span>)  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># For reproducibility</span></span>
+<span id="cb2-10">  </span>
+<span id="cb2-11">  regions <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"AFRICA"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"AMERICA"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ASIA"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"EUROPE"</span>)</span>
+<span id="cb2-12">  years <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2000</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2020</span></span>
+<span id="cb2-13">  data <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">expand.grid</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">region =</span> regions, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">year =</span> years)</span>
+<span id="cb2-14">  </span>
+<span id="cb2-15">  data<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>doses <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sample</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100000</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000000</span>, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">nrow</span>(data), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">replace =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>)</span>
+<span id="cb2-16">  data<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>population <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sample</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1000000</span><span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">:</span><span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">10000000</span>, <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">nrow</span>(data), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">replace =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">TRUE</span>)</span>
+<span id="cb2-17">  data<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>coverage <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> (data<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>doses <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">/</span> data<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>population) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">*</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">100</span></span>
+<span id="cb2-18">  </span>
+<span id="cb2-19">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">return</span>(data)</span>
+<span id="cb2-20">}</span>
+<span id="cb2-21"></span>
+<span id="cb2-22"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Generate the data</span></span>
+<span id="cb2-23">data <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">generate_data</span>()</span>
+<span id="cb2-24"></span>
+<span id="cb2-25"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Define UI for application</span></span>
+<span id="cb2-26">ui <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">page_sidebar</span>(</span>
+<span id="cb2-27">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">title =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Vaccination Coverage Data"</span>,</span>
+<span id="cb2-28">  </span>
+<span id="cb2-29">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">sidebar =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sidebarPanel</span>(</span>
+<span id="cb2-30">    <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">width =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">30</span>,</span>
+<span id="cb2-31">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">selectInput</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"region"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Select Region:"</span>, </span>
+<span id="cb2-32">                <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">choices =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"All"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"AFRICA"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"AMERICA"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ASIA"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"EUROPE"</span>), </span>
+<span id="cb2-33">                <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">selected =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"All"</span>,</span>
+<span id="cb2-34">                <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">multiple =</span> <span class="cn" style="color: #8f5902;
+background-color: null;
+font-style: inherit;">FALSE</span>),</span>
+<span id="cb2-35">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">sliderInput</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"yearRange"</span>, <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Select Year Range:"</span>, </span>
+<span id="cb2-36">                <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">min =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2000</span>, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">max =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2020</span>, </span>
+<span id="cb2-37">                <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">value =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2000</span>, <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2020</span>), <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">step =</span> <span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>)</span>
+<span id="cb2-38">  ),</span>
+<span id="cb2-39">  </span>
+<span id="cb2-40">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">navbarPage</span>(</span>
+<span id="cb2-41">  <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">title =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Vaccination Coverage Data"</span>,</span>
+<span id="cb2-42">  </span>
+<span id="cb2-43">    <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Example of a tab with a plot (additional feature)</span></span>
+<span id="cb2-44">  <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">tabPanel</span>(</span>
+<span id="cb2-45">    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Plot"</span>,</span>
+<span id="cb2-46">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">h3</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Coverage Plot"</span>),</span>
+<span id="cb2-47">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">plotOutput</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"coveragePlot"</span>)</span>
+<span id="cb2-48">  )</span>
+<span id="cb2-49">  )</span>
+<span id="cb2-50">)</span>
+<span id="cb2-51"></span>
+<span id="cb2-52"></span>
+<span id="cb2-53"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Define server logic required to display the table and other components</span></span>
+<span id="cb2-54">server <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">function</span>(input, output) {</span>
+<span id="cb2-55">  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Reactive expression to filter data based on selected region and year range</span></span>
+<span id="cb2-56">  filtered_data <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">reactive</span>({</span>
+<span id="cb2-57">    data_filtered <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> data</span>
+<span id="cb2-58">    </span>
+<span id="cb2-59">    <span class="cf" style="color: #003B4F;
+background-color: null;
+font-weight: bold;
+font-style: inherit;">if</span> (input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>region <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">!=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"All"</span>) {</span>
+<span id="cb2-60">      data_filtered <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">subset</span>(data_filtered, region <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">==</span> input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>region)</span>
+<span id="cb2-61">    }</span>
+<span id="cb2-62">    </span>
+<span id="cb2-63">    data_filtered <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">subset</span>(data_filtered, year <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&gt;=</span> input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>yearRange[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">1</span>] <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&amp;</span> year <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">&lt;=</span> input<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>yearRange[<span class="dv" style="color: #AD0000;
+background-color: null;
+font-style: inherit;">2</span>])</span>
+<span id="cb2-64">    </span>
+<span id="cb2-65">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">return</span>(data_filtered)</span>
+<span id="cb2-66">  })</span>
+<span id="cb2-67"></span>
+<span id="cb2-68">  <span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Render a plot of coverage</span></span>
+<span id="cb2-69">  output<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">$</span>coveragePlot <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">&lt;-</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">renderPlot</span>({</span>
+<span id="cb2-70">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">library</span>(ggplot2)</span>
+<span id="cb2-71">    <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">ggplot</span>(<span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">filtered_data</span>(), <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">aes</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">x =</span> year, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">y =</span> coverage, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">color =</span> region)) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb2-72">      <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">geom_line</span>() <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb2-73">      <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">geom_point</span>()<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb2-74">      <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">labs</span>(</span>
+<span id="cb2-75">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">title =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Vaccination Coverage Over Time"</span>,</span>
+<span id="cb2-76">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">x =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Year"</span>,</span>
+<span id="cb2-77">        <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">y =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Coverage (%)"</span></span>
+<span id="cb2-78">      ) <span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb2-79">       <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">scale_color_manual</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">name =</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"Region"</span>,</span>
+<span id="cb2-80">                         <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">values =</span> <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">c</span>(<span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"AFRICA"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"#E88D67"</span>,</span>
+<span id="cb2-81">                                    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"AMERICA"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"#DA7297"</span>,</span>
+<span id="cb2-82">                                    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"ASIA"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span> <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"#006989"</span>,</span>
+<span id="cb2-83">                                    <span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"EUROPE"</span> <span class="ot" style="color: #003B4F;
+background-color: null;
+font-style: inherit;">=</span><span class="st" style="color: #20794D;
+background-color: null;
+font-style: inherit;">"#729762"</span>))<span class="sc" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;">+</span></span>
+<span id="cb2-84">      <span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">theme_minimal</span>()</span>
+<span id="cb2-85">  })</span>
+<span id="cb2-86">}</span>
+<span id="cb2-87"></span>
+<span id="cb2-88"><span class="co" style="color: #5E5E5E;
+background-color: null;
+font-style: inherit;"># Run the application</span></span>
+<span id="cb2-89"><span class="fu" style="color: #4758AB;
+background-color: null;
+font-style: inherit;">shinyApp</span>(<span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">ui =</span> ui, <span class="at" style="color: #657422;
+background-color: null;
+font-style: inherit;">server =</span> server)</span></code></pre></div>
+<div class="cell-output-display">
+<p></p><div style="width: 100% ; height: 400px ; text-align: center; box-sizing: border-box; -moz-box-sizing: border-box; -webkit-box-sizing: border-box;" class="muted well">Shiny applications not supported in static R Markdown documents</div><p></p>
+</div>
+</div>
+
+
+
+</section>
+
+<div class="quarto-listing quarto-listing-container-default" id="listing-listing">
+<div class="list quarto-listing-default">
+
+</div>
+<div class="listing-no-matching d-none">
+No matching items
+</div>
+</div> ]]></description>
+  <category>R-Shinylive</category>
+  <category>ggplot2</category>
+  <category>Quarto</category>
+  <guid>https://joaom7.netlify.app/posts/appShiny/shinyExample.html</guid>
+  <pubDate>Sat, 27 Jul 2024 22:00:00 GMT</pubDate>
+  <media:content url="https://joaom7.netlify.app/posts/appShiny/shine.jpg" medium="image" type="image/jpeg"/>
+</item>
 <item>
   <title>Choropleth map with ggplot2 and viridis</title>
   <dc:creator>João Muianga</dc:creator>
-  <link>https://bejewelled-nougat-3b99a7.netlify.app/posts/maps_viridis/maps.html</link>
+  <link>https://joaom7.netlify.app/posts/maps_viridis/maps.html</link>
   <description><![CDATA[ 
 
 
@@ -138,7 +716,7 @@ font-style: inherit;">FALSE</span>)</span></code></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://bejewelled-nougat-3b99a7.netlify.app/posts/maps_viridis/maps_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="https://joaom7.netlify.app/posts/maps_viridis/maps_files/figure-html/unnamed-chunk-4-1.png" class="img-fluid figure-img" width="672"></p>
 <figcaption>basic_map</figcaption>
 </figure>
 </div>
@@ -252,7 +830,7 @@ font-style: inherit;">theme_void</span>()</span></code></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="https://bejewelled-nougat-3b99a7.netlify.app/posts/maps_viridis/maps_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="960"></p>
+<p><img src="https://joaom7.netlify.app/posts/maps_viridis/maps_files/figure-html/unnamed-chunk-7-1.png" class="img-fluid figure-img" width="960"></p>
 </figure>
 </div>
 </div>
@@ -610,7 +1188,7 @@ font-style: inherit;">0.08</span>)</span>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="https://bejewelled-nougat-3b99a7.netlify.app/posts/maps_viridis/maps_files/figure-html/map-1.png" class="img-fluid figure-img" width="960"></p>
+<p><img src="https://joaom7.netlify.app/posts/maps_viridis/maps_files/figure-html/map-1.png" class="img-fluid figure-img" width="960"></p>
 </figure>
 </div>
 </div>
@@ -634,14 +1212,14 @@ No matching items
   <category>Viridis</category>
   <category>Hospitalization</category>
   <category>COVID-19</category>
-  <guid>https://bejewelled-nougat-3b99a7.netlify.app/posts/maps_viridis/maps.html</guid>
+  <guid>https://joaom7.netlify.app/posts/maps_viridis/maps.html</guid>
   <pubDate>Tue, 23 Jul 2024 22:00:00 GMT</pubDate>
-  <media:content url="https://bejewelled-nougat-3b99a7.netlify.app/posts/maps_viridis/photo.jpg" medium="image" type="image/jpeg"/>
+  <media:content url="https://joaom7.netlify.app/posts/maps_viridis/photo.jpg" medium="image" type="image/jpeg"/>
 </item>
 <item>
   <title>COVID-19 Forecast: US Hospitalizations data</title>
   <dc:creator>João Muianga</dc:creator>
-  <link>https://bejewelled-nougat-3b99a7.netlify.app/posts/forecast_hosp/forecast.html</link>
+  <link>https://joaom7.netlify.app/posts/forecast_hosp/forecast.html</link>
   <description><![CDATA[ 
 
 
@@ -1031,7 +1609,7 @@ font-style: inherit;">1000000</span>)</span></code></pre></div>
 <div class="cell-output-display">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://bejewelled-nougat-3b99a7.netlify.app/posts/forecast_hosp/forecast_files/figure-html/time_serie-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="https://joaom7.netlify.app/posts/forecast_hosp/forecast_files/figure-html/time_serie-1.png" class="img-fluid figure-img" width="672"></p>
 <figcaption>Time serie of New Hospitalization and Deaths</figcaption>
 </figure>
 </div>
@@ -1119,7 +1697,7 @@ font-style: inherit;">"Polar seasonal plot: Deaths"</span>)</span></code></pre><
 <div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://bejewelled-nougat-3b99a7.netlify.app/posts/forecast_hosp/forecast_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="https://joaom7.netlify.app/posts/forecast_hosp/forecast_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
 <figcaption>-“hospitalization” -“deaths”</figcaption>
 </figure>
 </div>
@@ -1127,7 +1705,7 @@ font-style: inherit;">"Polar seasonal plot: Deaths"</span>)</span></code></pre><
 <div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
-<p><img src="https://bejewelled-nougat-3b99a7.netlify.app/posts/forecast_hosp/forecast_files/figure-html/unnamed-chunk-12-2.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="https://joaom7.netlify.app/posts/forecast_hosp/forecast_files/figure-html/unnamed-chunk-12-2.png" class="img-fluid figure-img" width="672"></p>
 <figcaption>-“hospitalization” -“deaths”</figcaption>
 </figure>
 </div>
@@ -1151,7 +1729,7 @@ font-style: inherit;">2</span>])</span></code></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="https://bejewelled-nougat-3b99a7.netlify.app/posts/forecast_hosp/forecast_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="https://joaom7.netlify.app/posts/forecast_hosp/forecast_files/figure-html/unnamed-chunk-13-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1212,7 +1790,7 @@ font-style: inherit;">2</span>])) </span></code></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="https://bejewelled-nougat-3b99a7.netlify.app/posts/forecast_hosp/forecast_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="https://joaom7.netlify.app/posts/forecast_hosp/forecast_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1286,7 +1864,7 @@ font-style: inherit;">checkresiduals</span>()</span></code></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="https://bejewelled-nougat-3b99a7.netlify.app/posts/forecast_hosp/forecast_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="https://joaom7.netlify.app/posts/forecast_hosp/forecast_files/figure-html/unnamed-chunk-17-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1341,7 +1919,7 @@ font-style: inherit;">autoplot</span>()</span></code></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="https://bejewelled-nougat-3b99a7.netlify.app/posts/forecast_hosp/forecast_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="https://joaom7.netlify.app/posts/forecast_hosp/forecast_files/figure-html/unnamed-chunk-18-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -1366,14 +1944,14 @@ No matching items
   <category>Time series</category>
   <category>Hospitalization</category>
   <category>COVID-19</category>
-  <guid>https://bejewelled-nougat-3b99a7.netlify.app/posts/forecast_hosp/forecast.html</guid>
+  <guid>https://joaom7.netlify.app/posts/forecast_hosp/forecast.html</guid>
   <pubDate>Tue, 02 Jul 2024 22:00:00 GMT</pubDate>
-  <media:content url="https://bejewelled-nougat-3b99a7.netlify.app/posts/forecast_hosp/forecast.jpg" medium="image" type="image/jpeg"/>
+  <media:content url="https://joaom7.netlify.app/posts/forecast_hosp/forecast.jpg" medium="image" type="image/jpeg"/>
 </item>
 <item>
   <title>Automated Surveillance Report using R Quarto</title>
   <dc:creator>João Muianga</dc:creator>
-  <link>https://bejewelled-nougat-3b99a7.netlify.app/posts/auto_report/auto_report.html</link>
+  <link>https://joaom7.netlify.app/posts/auto_report/auto_report.html</link>
   <description><![CDATA[ 
 
 
@@ -2277,7 +2855,7 @@ font-style: inherit;">bg =</span> <span class="st" style="color: #20794D;
 background-color: null;
 font-style: inherit;">"#91c293"</span>)</span></code></pre></div>
 <div class="cell-output-display">
-<div class="tabwid"><style>.cl-4cde484e{}.cl-4cda9686{font-family:'Helvetica';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-4cdc5980{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-4cdc638a{width:1.44in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc638b{width:1.058in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc638c{width:0.965in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc6394{width:1.033in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc6395{width:1.033in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc6396{width:1.033in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc639e{width:1.44in;background-color:rgba(145, 194, 147, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc639f{width:1.058in;background-color:rgba(145, 194, 147, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63a8{width:0.965in;background-color:rgba(145, 194, 147, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63a9{width:1.033in;background-color:rgba(145, 194, 147, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63b2{width:1.033in;background-color:rgba(145, 194, 147, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63b3{width:1.033in;background-color:rgba(145, 194, 147, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63b4{width:1.44in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63bc{width:1.058in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63bd{width:0.965in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63be{width:1.033in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63bf{width:1.033in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63c6{width:1.033in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63c7{width:1.44in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63c8{width:1.058in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63d0{width:0.965in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63d1{width:1.033in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63da{width:1.033in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63db{width:1.033in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63dc{width:1.44in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63dd{width:1.058in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63de{width:0.965in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63e4{width:1.033in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63e5{width:1.033in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-4cdc63e6{width:1.033in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-4cde484e"><thead><tr style="overflow-wrap:break-word;"><th class="cl-4cdc638a"><p class="cl-4cdc5980"><span class="cl-4cda9686">District</span></p></th><th class="cl-4cdc638b"><p class="cl-4cdc5980"><span class="cl-4cda9686">Cumulative Cases</span></p></th><th class="cl-4cdc638c"><p class="cl-4cdc5980"><span class="cl-4cda9686">Cases - Last Week</span></p></th><th class="cl-4cdc6394"><p class="cl-4cdc5980"><span class="cl-4cda9686">Supected cases </span></p></th><th class="cl-4cdc6394"><p class="cl-4cdc5980"><span class="cl-4cda9686">Confirmed cases </span></p></th><th class="cl-4cdc6395"><p class="cl-4cdc5980"><span class="cl-4cda9686">Probable cases </span></p></th><th class="cl-4cdc6396"><p class="cl-4cdc5980"><span class="cl-4cda9686">Total</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-4cdc639e"><p class="cl-4cdc5980"><span class="cl-4cda9686">Bougouni</span></p></td><td class="cl-4cdc639f"><p class="cl-4cdc5980"><span class="cl-4cda9686">21 (55.3%)</span></p></td><td class="cl-4cdc63a8"><p class="cl-4cdc5980"><span class="cl-4cda9686">0  (0.0%)</span></p></td><td class="cl-4cdc63a9"><p class="cl-4cdc5980"><span class="cl-4cda9686">15 (46.9%)</span></p></td><td class="cl-4cdc63a9"><p class="cl-4cdc5980"><span class="cl-4cda9686">3 (100.0%)</span></p></td><td class="cl-4cdc63b2"><p class="cl-4cdc5980"><span class="cl-4cda9686">3 (100.0%)</span></p></td><td class="cl-4cdc63b3"><p class="cl-4cdc5980"><span class="cl-4cda9686">42 (48.8%)</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-4cdc63b4"><p class="cl-4cdc5980"><span class="cl-4cda9686">Commune V</span></p></td><td class="cl-4cdc63bc"><p class="cl-4cdc5980"><span class="cl-4cda9686">3  (7.9%)</span></p></td><td class="cl-4cdc63bd"><p class="cl-4cdc5980"><span class="cl-4cda9686">3 (30.0%)</span></p></td><td class="cl-4cdc63be"><p class="cl-4cdc5980"><span class="cl-4cda9686">3  (9.4%)</span></p></td><td class="cl-4cdc63be"><p class="cl-4cdc5980"><span class="cl-4cda9686">0   (0.0%)</span></p></td><td class="cl-4cdc63bf"><p class="cl-4cdc5980"><span class="cl-4cda9686">0   (0.0%)</span></p></td><td class="cl-4cdc63c6"><p class="cl-4cdc5980"><span class="cl-4cda9686">9 (10.5%)</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-4cdc63b4"><p class="cl-4cdc5980"><span class="cl-4cda9686">Kalaban coro</span></p></td><td class="cl-4cdc63bc"><p class="cl-4cdc5980"><span class="cl-4cda9686">2  (5.3%)</span></p></td><td class="cl-4cdc63bd"><p class="cl-4cdc5980"><span class="cl-4cda9686">0  (0.0%)</span></p></td><td class="cl-4cdc63be"><p class="cl-4cdc5980"><span class="cl-4cda9686">2  (6.2%)</span></p></td><td class="cl-4cdc63be"><p class="cl-4cdc5980"><span class="cl-4cda9686">0   (0.0%)</span></p></td><td class="cl-4cdc63bf"><p class="cl-4cdc5980"><span class="cl-4cda9686">0   (0.0%)</span></p></td><td class="cl-4cdc63c6"><p class="cl-4cdc5980"><span class="cl-4cda9686">4  (4.7%)</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-4cdc63c7"><p class="cl-4cdc5980"><span class="cl-4cda9686">Ouélessebougou</span></p></td><td class="cl-4cdc63c8"><p class="cl-4cdc5980"><span class="cl-4cda9686">5 (13.2%)</span></p></td><td class="cl-4cdc63d0"><p class="cl-4cdc5980"><span class="cl-4cda9686">0  (0.0%)</span></p></td><td class="cl-4cdc63d1"><p class="cl-4cdc5980"><span class="cl-4cda9686">5 (15.6%)</span></p></td><td class="cl-4cdc63d1"><p class="cl-4cdc5980"><span class="cl-4cda9686">0   (0.0%)</span></p></td><td class="cl-4cdc63da"><p class="cl-4cdc5980"><span class="cl-4cda9686">0   (0.0%)</span></p></td><td class="cl-4cdc63db"><p class="cl-4cdc5980"><span class="cl-4cda9686">10 (11.6%)</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-4cdc63b4"><p class="cl-4cdc5980"><span class="cl-4cda9686">Sofeto</span></p></td><td class="cl-4cdc63bc"><p class="cl-4cdc5980"><span class="cl-4cda9686">3  (7.9%)</span></p></td><td class="cl-4cdc63bd"><p class="cl-4cdc5980"><span class="cl-4cda9686">3 (30.0%)</span></p></td><td class="cl-4cdc63be"><p class="cl-4cdc5980"><span class="cl-4cda9686">3  (9.4%)</span></p></td><td class="cl-4cdc63be"><p class="cl-4cdc5980"><span class="cl-4cda9686">0   (0.0%)</span></p></td><td class="cl-4cdc63bf"><p class="cl-4cdc5980"><span class="cl-4cda9686">0   (0.0%)</span></p></td><td class="cl-4cdc63c6"><p class="cl-4cdc5980"><span class="cl-4cda9686">9 (10.5%)</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-4cdc63dc"><p class="cl-4cdc5980"><span class="cl-4cda9686">Tombouctou</span></p></td><td class="cl-4cdc63dd"><p class="cl-4cdc5980"><span class="cl-4cda9686">4 (10.5%)</span></p></td><td class="cl-4cdc63de"><p class="cl-4cdc5980"><span class="cl-4cda9686">4 (40.0%)</span></p></td><td class="cl-4cdc63e4"><p class="cl-4cdc5980"><span class="cl-4cda9686">4 (12.5%)</span></p></td><td class="cl-4cdc63e4"><p class="cl-4cdc5980"><span class="cl-4cda9686">0   (0.0%)</span></p></td><td class="cl-4cdc63e5"><p class="cl-4cdc5980"><span class="cl-4cda9686">0   (0.0%)</span></p></td><td class="cl-4cdc63e6"><p class="cl-4cdc5980"><span class="cl-4cda9686">12 (14.0%)</span></p></td></tr></tbody></table></div>
+<div class="tabwid"><style>.cl-8f6f08ae{}.cl-8f6b8602{font-family:'Helvetica';font-size:11pt;font-weight:normal;font-style:normal;text-decoration:none;color:rgba(0, 0, 0, 1.00);background-color:transparent;}.cl-8f6d20f2{margin:0;text-align:left;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);padding-bottom:5pt;padding-top:5pt;padding-left:5pt;padding-right:5pt;line-height: 1;background-color:transparent;}.cl-8f6d2a48{width:1.44in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a52{width:1.058in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a53{width:0.965in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a54{width:1.033in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a55{width:1.033in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a56{width:1.033in;background-color:transparent;vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 1.5pt solid rgba(102, 102, 102, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a57{width:1.44in;background-color:rgba(145, 194, 147, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a5c{width:1.058in;background-color:rgba(145, 194, 147, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a5d{width:0.965in;background-color:rgba(145, 194, 147, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a5e{width:1.033in;background-color:rgba(145, 194, 147, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a5f{width:1.033in;background-color:rgba(145, 194, 147, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a60{width:1.033in;background-color:rgba(145, 194, 147, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a66{width:1.44in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a67{width:1.058in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a68{width:0.965in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a69{width:1.033in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a70{width:1.033in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a71{width:1.033in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a72{width:1.44in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a73{width:1.058in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a74{width:0.965in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a75{width:1.033in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a7a{width:1.033in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a7b{width:1.033in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 0 solid rgba(0, 0, 0, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a7c{width:1.44in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a7d{width:1.058in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a7e{width:0.965in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a7f{width:1.033in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 1pt solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a84{width:1.033in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 1pt solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}.cl-8f6d2a85{width:1.033in;background-color:rgba(242, 242, 242, 1.00);vertical-align: middle;border-bottom: 1.5pt solid rgba(102, 102, 102, 1.00);border-top: 0 solid rgba(0, 0, 0, 1.00);border-left: 0 solid rgba(0, 0, 0, 1.00);border-right: 0 solid rgba(0, 0, 0, 1.00);margin-bottom:0;margin-top:0;margin-left:0;margin-right:0;}</style><table data-quarto-disable-processing="true" class="cl-8f6f08ae"><thead><tr style="overflow-wrap:break-word;"><th class="cl-8f6d2a48"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">District</span></p></th><th class="cl-8f6d2a52"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">Cumulative Cases</span></p></th><th class="cl-8f6d2a53"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">Cases - Last Week</span></p></th><th class="cl-8f6d2a54"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">Supected cases </span></p></th><th class="cl-8f6d2a54"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">Confirmed cases </span></p></th><th class="cl-8f6d2a55"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">Probable cases </span></p></th><th class="cl-8f6d2a56"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">Total</span></p></th></tr></thead><tbody><tr style="overflow-wrap:break-word;"><td class="cl-8f6d2a57"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">Bougouni</span></p></td><td class="cl-8f6d2a5c"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">21 (55.3%)</span></p></td><td class="cl-8f6d2a5d"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">0  (0.0%)</span></p></td><td class="cl-8f6d2a5e"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">15 (46.9%)</span></p></td><td class="cl-8f6d2a5e"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">3 (100.0%)</span></p></td><td class="cl-8f6d2a5f"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">3 (100.0%)</span></p></td><td class="cl-8f6d2a60"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">42 (48.8%)</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-8f6d2a66"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">Commune V</span></p></td><td class="cl-8f6d2a67"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">3  (7.9%)</span></p></td><td class="cl-8f6d2a68"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">3 (30.0%)</span></p></td><td class="cl-8f6d2a69"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">3  (9.4%)</span></p></td><td class="cl-8f6d2a69"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">0   (0.0%)</span></p></td><td class="cl-8f6d2a70"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">0   (0.0%)</span></p></td><td class="cl-8f6d2a71"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">9 (10.5%)</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-8f6d2a66"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">Kalaban coro</span></p></td><td class="cl-8f6d2a67"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">2  (5.3%)</span></p></td><td class="cl-8f6d2a68"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">0  (0.0%)</span></p></td><td class="cl-8f6d2a69"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">2  (6.2%)</span></p></td><td class="cl-8f6d2a69"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">0   (0.0%)</span></p></td><td class="cl-8f6d2a70"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">0   (0.0%)</span></p></td><td class="cl-8f6d2a71"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">4  (4.7%)</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-8f6d2a72"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">Ouélessebougou</span></p></td><td class="cl-8f6d2a73"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">5 (13.2%)</span></p></td><td class="cl-8f6d2a74"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">0  (0.0%)</span></p></td><td class="cl-8f6d2a75"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">5 (15.6%)</span></p></td><td class="cl-8f6d2a75"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">0   (0.0%)</span></p></td><td class="cl-8f6d2a7a"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">0   (0.0%)</span></p></td><td class="cl-8f6d2a7b"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">10 (11.6%)</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-8f6d2a66"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">Sofeto</span></p></td><td class="cl-8f6d2a67"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">3  (7.9%)</span></p></td><td class="cl-8f6d2a68"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">3 (30.0%)</span></p></td><td class="cl-8f6d2a69"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">3  (9.4%)</span></p></td><td class="cl-8f6d2a69"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">0   (0.0%)</span></p></td><td class="cl-8f6d2a70"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">0   (0.0%)</span></p></td><td class="cl-8f6d2a71"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">9 (10.5%)</span></p></td></tr><tr style="overflow-wrap:break-word;"><td class="cl-8f6d2a7c"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">Tombouctou</span></p></td><td class="cl-8f6d2a7d"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">4 (10.5%)</span></p></td><td class="cl-8f6d2a7e"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">4 (40.0%)</span></p></td><td class="cl-8f6d2a7f"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">4 (12.5%)</span></p></td><td class="cl-8f6d2a7f"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">0   (0.0%)</span></p></td><td class="cl-8f6d2a84"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">0   (0.0%)</span></p></td><td class="cl-8f6d2a85"><p class="cl-8f6d20f2"><span class="cl-8f6b8602">12 (14.0%)</span></p></td></tr></tbody></table></div>
 </div>
 </div>
 </section>
@@ -2411,7 +2989,7 @@ font-style: inherit;">12</span>)</span>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="https://bejewelled-nougat-3b99a7.netlify.app/posts/auto_report/auto_report_files/figure-html/geom_bar-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="https://joaom7.netlify.app/posts/auto_report/auto_report_files/figure-html/geom_bar-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -2574,7 +3152,7 @@ font-style: inherit;">Cumulative cases of {nrow(yellow_fever_clean)} as of {max(
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="https://bejewelled-nougat-3b99a7.netlify.app/posts/auto_report/auto_report_files/figure-html/epicurve-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="https://joaom7.netlify.app/posts/auto_report/auto_report_files/figure-html/epicurve-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -2715,7 +3293,7 @@ font-style: inherit;">14</span>)</span>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="https://bejewelled-nougat-3b99a7.netlify.app/posts/auto_report/auto_report_files/figure-html/age_pyramid-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="https://joaom7.netlify.app/posts/auto_report/auto_report_files/figure-html/age_pyramid-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
@@ -2737,14 +3315,14 @@ No matching items
   <category>Visualization</category>
   <category>ggplot2</category>
   <category>Summary Table</category>
-  <guid>https://bejewelled-nougat-3b99a7.netlify.app/posts/auto_report/auto_report.html</guid>
+  <guid>https://joaom7.netlify.app/posts/auto_report/auto_report.html</guid>
   <pubDate>Sat, 29 Jun 2024 22:00:00 GMT</pubDate>
-  <media:content url="https://bejewelled-nougat-3b99a7.netlify.app/posts/auto_report/auto.jpg" medium="image" type="image/jpeg"/>
+  <media:content url="https://joaom7.netlify.app/posts/auto_report/auto.jpg" medium="image" type="image/jpeg"/>
 </item>
 <item>
   <title>API with R to Extract data from the WHO Global Health Observatory (GHO)</title>
   <dc:creator>João Muianga</dc:creator>
-  <link>https://bejewelled-nougat-3b99a7.netlify.app/posts/gho_with_api/post.html</link>
+  <link>https://joaom7.netlify.app/posts/gho_with_api/post.html</link>
   <description><![CDATA[ 
 
 
@@ -3523,9 +4101,9 @@ No matching items
   <category>API</category>
   <category>Summary Table</category>
   <category>GHO OData API</category>
-  <guid>https://bejewelled-nougat-3b99a7.netlify.app/posts/gho_with_api/post.html</guid>
+  <guid>https://joaom7.netlify.app/posts/gho_with_api/post.html</guid>
   <pubDate>Thu, 27 Jun 2024 22:00:00 GMT</pubDate>
-  <media:content url="https://bejewelled-nougat-3b99a7.netlify.app/posts/gho_with_api/api.jpg" medium="image" type="image/jpeg"/>
+  <media:content url="https://joaom7.netlify.app/posts/gho_with_api/api.jpg" medium="image" type="image/jpeg"/>
 </item>
 </channel>
 </rss>

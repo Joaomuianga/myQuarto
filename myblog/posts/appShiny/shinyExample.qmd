@@ -1,0 +1,242 @@
+---
+title: "R-Shinylive app in Quarto "
+filters:
+  - shinylive
+  
+listing:
+  contents: posts/appShiny
+  sort: "date desc"
+  type: default
+  categories: true
+  sort-ui: false
+  filter-ui: false
+  fields: [image, date, title, reading-time, description]
+page-layout: full
+title-block-banner: false
+image: "shine.jpg"
+date: "2024-07-28"
+categories: [R-Shinylive, ggplot2, Quarto]
+description: "An Example of how to build R-Shinylive app in Quarto"
+  
+---
+
+
+
+```{shinylive-r}
+#| standalone: true
+#| viewerHeight: 720
+#| code-fold: false
+
+library(shiny)
+library(DT)
+library(bslib)
+library(ggplot2)
+
+# Function to generate the sample data
+generate_data <- function() {
+  set.seed(123)  # For reproducibility
+  
+  regions <- c("AFRICA", "AMERICA", "ASIA", "EUROPE")
+  years <- 2000:2020
+  data <- expand.grid(region = regions, year = years)
+  
+  data$doses <- sample(100000:1000000, nrow(data), replace = TRUE)
+  data$population <- sample(1000000:10000000, nrow(data), replace = TRUE)
+  data$coverage <- (data$doses / data$population) * 100
+  
+  return(data)
+}
+
+# Generate the data
+data <- generate_data()
+
+# Define UI for application
+ui <- page_sidebar(
+  title = "Vaccination Coverage Data",
+  
+  sidebar = sidebarPanel(
+    width = 30,
+    selectInput("region", "Select Region:", 
+                choices = c("All", "AFRICA", "AMERICA", "ASIA", "EUROPE"), 
+                selected = "All",
+                multiple = FALSE),
+    sliderInput("yearRange", "Select Year Range:", 
+                min = 2000, max = 2020, 
+                value = c(2000, 2020), step = 1)
+  ),
+  
+  navbarPage(
+  title = "Vaccination Coverage Data",
+  
+    # Example of a tab with a plot (additional feature)
+  tabPanel(
+    "Plot",
+    h3("Coverage Plot"),
+    plotOutput("coveragePlot")
+  )
+  )
+)
+# Define server logic required to display the table and other components
+server <- function(input, output) {
+  # Reactive expression to filter data based on selected region and year range
+  filtered_data <- reactive({
+    data_filtered <- data
+    
+    if (input$region != "All") {
+      data_filtered <- subset(data_filtered, region == input$region)
+    }
+    
+    data_filtered <- subset(data_filtered, year >= input$yearRange[1] & year <= input$yearRange[2])
+    
+    return(data_filtered)
+  })
+
+  # Render a plot of coverage
+  output$coveragePlot <- renderPlot({
+    library(ggplot2)
+    ggplot(filtered_data(), aes(x = year, y = coverage, color = region)) +
+      geom_line() +
+      geom_point()+
+      labs(
+        title = "Vaccination Coverage Over Time",
+        x = "Year",
+        y = "Coverage (%)"
+      ) +
+       scale_color_manual(name = "Region",
+                         values = c("AFRICA" = "#E88D67",
+                                    "AMERICA" = "#DA7297",
+                                    "ASIA" = "#006989",
+                                    "EUROPE" ="#729762"))+
+      theme_minimal()
+  })
+}
+
+# Run the application
+shinyApp(ui = ui, server = server)
+
+```
+
+This example demonstrates how you can build an interactive dashboard in Quarto using the R Shinylive app that runs without a server.
+
+
+## Installation
+Step 1: Install the r-shinylive  R package from CRAN. It can be obtained from the R console using the following command
+`install.packages("shinylive")`
+
+## Installing the Quarto Extension for r-shinylive
+Step 2: Install the Quarto extension for `shinylive`. In the Terminal tab, run the following command:
+`quarto add quarto-ext/shinylive`
+
+
+
+## Embedding the R Shinylive in Quarto
+To Include a Shiny app directly in your Quarto file `.qmd`, you need to add a filter key for `shinylive` at the top of the desired Quarto file. Opne your Quarto file and add following YAML header:
+
+
+
+Embed the complete R Shinylive app into a `{shinylive-r}`. Ensure to set `standarlone:true` and consider adjusting the app height with `viewerHeight:600`
+
+## Render your Shinylive App into your terminal
+`quarto preview R-shinylive-shinyapp.qmd --no-browser --no-watch-inputs`
+
+
+
+```{r}
+#| standalone: true
+#| code-fold: false
+#| warning: false
+#| message: false
+
+# Load library 
+library(shiny)
+library(DT)
+library(bslib)
+library(ggplot2)
+
+# Function to generate the sample data
+generate_data <- function() {
+  set.seed(123)  # For reproducibility
+  
+  regions <- c("AFRICA", "AMERICA", "ASIA", "EUROPE")
+  years <- 2000:2020
+  data <- expand.grid(region = regions, year = years)
+  
+  data$doses <- sample(100000:1000000, nrow(data), replace = TRUE)
+  data$population <- sample(1000000:10000000, nrow(data), replace = TRUE)
+  data$coverage <- (data$doses / data$population) * 100
+  
+  return(data)
+}
+
+# Generate the data
+data <- generate_data()
+
+# Define UI for application
+ui <- page_sidebar(
+  title = "Vaccination Coverage Data",
+  
+  sidebar = sidebarPanel(
+    width = 30,
+    selectInput("region", "Select Region:", 
+                choices = c("All", "AFRICA", "AMERICA", "ASIA", "EUROPE"), 
+                selected = "All",
+                multiple = FALSE),
+    sliderInput("yearRange", "Select Year Range:", 
+                min = 2000, max = 2020, 
+                value = c(2000, 2020), step = 1)
+  ),
+  
+  navbarPage(
+  title = "Vaccination Coverage Data",
+  
+    # Example of a tab with a plot (additional feature)
+  tabPanel(
+    "Plot",
+    h3("Coverage Plot"),
+    plotOutput("coveragePlot")
+  )
+  )
+)
+
+
+# Define server logic required to display the table and other components
+server <- function(input, output) {
+  # Reactive expression to filter data based on selected region and year range
+  filtered_data <- reactive({
+    data_filtered <- data
+    
+    if (input$region != "All") {
+      data_filtered <- subset(data_filtered, region == input$region)
+    }
+    
+    data_filtered <- subset(data_filtered, year >= input$yearRange[1] & year <= input$yearRange[2])
+    
+    return(data_filtered)
+  })
+
+  # Render a plot of coverage
+  output$coveragePlot <- renderPlot({
+    library(ggplot2)
+    ggplot(filtered_data(), aes(x = year, y = coverage, color = region)) +
+      geom_line() +
+      geom_point()+
+      labs(
+        title = "Vaccination Coverage Over Time",
+        x = "Year",
+        y = "Coverage (%)"
+      ) +
+       scale_color_manual(name = "Region",
+                         values = c("AFRICA" = "#E88D67",
+                                    "AMERICA" = "#DA7297",
+                                    "ASIA" = "#006989",
+                                    "EUROPE" ="#729762"))+
+      theme_minimal()
+  })
+}
+
+# Run the application
+shinyApp(ui = ui, server = server)
+
+```
+
+
